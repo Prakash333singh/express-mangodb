@@ -5,9 +5,9 @@ const { dbConnection } = require("./database");
 app.get("/", async (req, res) => {
   try {
     const db = await dbConnection();
-    const collection = db.collection("Users");
-    const Users = await collection.find().toArray();
-    res.json(Users);
+    const collection = db.collection("users");
+    const users = await collection.find().toArray();
+    res.json(users);
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Internal server error" });
@@ -15,23 +15,25 @@ app.get("/", async (req, res) => {
 });
 
 //post request
+//for insertion of new documents
 
-app.use(express.json());
+app.use(express.json()); //before declearling this req.body is coming
+//undefined
 
 app.post("/users", async (req, res) => {
   console.log(req.body);
   const db = await dbConnection();
-  const collection = db.collection("Users"); // Use consistent casing for the collection name
+  const collection = db.collection("users"); // Use consistent casing for the collection name
   const result = await collection.insertOne(req.body); // Await the insert operation
   res.json("updated");
 });
 
-//put request
+//put request for updating existing documents
 app.put("/users/:name", async (req, res) => {
   console.log(req.params);
   const db = await dbConnection();
   const collection = db.collection("users");
-  let singleData = collection.updateOne(
+  let singleData = await collection.updateOne(
     { name: req.params.name },
     { $set: req.body }
   );
@@ -43,7 +45,7 @@ app.delete("/users/:name", async (req, res) => {
   const db = await dbConnection();
   const collection = db.collection("users");
   const userName = req.params.name;
-  collection.deleteOne({ name: userName });
+  await collection.deleteOne({ name: userName });
   res.send("deleted");
 });
 
